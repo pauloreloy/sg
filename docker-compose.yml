@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  localstack:
+    image: localstack/localstack:3.4
+    container_name: share-grant-localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=dynamodb,sqs,sns
+      - AWS_DEFAULT_REGION=us-east-1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - ./localstack-init:/etc/localstack/init/ready.d
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - share-grant-net
+
+  controller:
+    build:
+      context: ./share-grant-controller
+      dockerfile: Dockerfile
+    container_name: share-grant-controller
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - LOCALSTACK_ENDPOINT=http://localstack:4566
+      - SQS_REQUESTS_QUEUE_URL=http://localstack:4566/000000000000/share-grant-requests-queue
+    depends_on:
+      localstack:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    networks:
+      - share-grant-net
+
+  databricks-service:
+    build:
+      context: ./analytics-share-grant-dbx-service
+      dockerfile: Dockerfile
+    container_name: analytics-share-grant-dbx-service
+    env_file:
+      - .env
+    environment:
+      - LOCALSTACK_ENDPOINT=http://localstack:4566
+      - SQS_REQUESTS_QUEUE_URL=http://localstack:4566/000000000000/share-grant-requests-queue
+      - CONTROLLER_URL=http://controller:8000
+    depends_on:
+      localstack:
+        condition: service_healthy
+      controller:
+        condition: service_healthy
+    networks:
+      - share-grant-net
+
+networks:
+  share-grant-net:
+    driver: bridge
