@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   localstack:
-    image: localstack/localstack:3.4
+    image: localstack/localstack:3.8
     container_name: share-grant-localstack
     ports:
       - "4566:4566"
@@ -54,8 +54,8 @@ services:
     env_file:
       - .env
     environment:
-      - LOCALSTACK_ENDPOINT=http://localstack:4566
-      - SQS_REQUESTS_QUEUE_URL=http://localstack:4566/000000000000/share-grant-requests-queue
+      #- LOCALSTACK_ENDPOINT=''
+      - SQS_REQUESTS_QUEUE_URL=https://sqs.us-east-1.amazonaws.com/338966484167/share-grant-requests-queue
       - CONTROLLER_URL=http://controller:8000
     depends_on:
       localstack:

@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     # LocalStack Endpoint: by default defined. If explicitly empty or unset, None is used.
     localstack_endpoint: Optional[str] = os.getenv(
         "LOCALSTACK_ENDPOINT",
-        os.getenv("AWS_ENDPOINT_URL", "http://localhost:4566"),
+        os.getenv("AWS_ENDPOINT_URL"),
     )
 
     # SQS Consumer Configuration
@@ -29,9 +29,9 @@ class Settings(BaseSettings):
 
     # Databricks Configuration
     databricks_use_mock: bool = os.getenv("DATABRICKS_USE_MOCK", "true").lower() in ("true", "1", "yes")
-    databricks_host: str = os.getenv("DATABRICKS_HOST", "https://dummy-workspace.cloud.databricks.com")
-    databricks_client_id: str = os.getenv("DATABRICKS_CLIENT_ID", "dummy-client-id")
-    databricks_client_secret: str = os.getenv("DATABRICKS_CLIENT_SECRET", "dummy-client-secret")
+    databricks_host: Optional[str] = os.getenv("DATABRICKS_HOST")
+    databricks_client_id: Optional[str] = os.getenv("DATABRICKS_CLIENT_ID")
+    databricks_client_secret: Optional[str] = os.getenv("DATABRICKS_CLIENT_SECRET")
     databricks_max_retries: int = int(os.getenv("DATABRICKS_MAX_RETRIES", "3"))
     databricks_retry_backoff_seconds: float = float(os.getenv("DATABRICKS_RETRY_BACKOFF_SECONDS", "1.0"))
 

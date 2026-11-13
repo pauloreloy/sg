@@ -103,7 +103,7 @@ class SubmitRequestUseCase(SubmitRequestPort):
             "requested_privileges": request.requested_privileges,
             "correlation_id": correlation_id,
         }
-
+        print(sqs_message)
         try:
             self.message_dispatcher.dispatch(sqs_message)
         except Exception as e:
